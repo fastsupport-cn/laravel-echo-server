@@ -1,5 +1,6 @@
 import { Database } from './../database';
 import { Log } from './../log';
+import { Channel } from './channel';
 var _ = require("lodash");
 
 export class PresenceChannel {
@@ -115,8 +116,8 @@ export class PresenceChannel {
      * Remove a member from a presenece channel and broadcast they have left
      * only if not other presence channel instances exist.
      */
-    leave(socket: any, channel: string): void {
-        this.getMembers(channel).then(
+    leave(socket: any, channelName: string, channel: Channel): void {
+        this.getMembers(channelName).then(
             (members) => {
                 members = members || [];
                 let member = members.find(
@@ -124,14 +125,16 @@ export class PresenceChannel {
                 );
                 members = members.filter((m) => m.socketId != member.socketId);
 
-                this.db.set(channel + ":members", members);
+                this.db.set(channelName + ":members", members);
 
-                this.isMember(channel, member).then((is_member) => {
+                this.isMember(channelName, member).then((is_member) => {
                     if (!is_member) {
                         delete member.socketId;
-                        this.onLeave(channel, member);
+                        this.onLeave(socket, channelName, member);
                     }
                 });
+
+                channel.private.leave(socket, channelName, member);
             },
             (error) => Log.error(error)
         );
@@ -149,8 +152,8 @@ export class PresenceChannel {
     /**
      * On leave emitter.
      */
-    onLeave(channel: string, member: any): void {
-        this.io.to(channel).emit("presence:leaving", channel, member);
+    onLeave(socket: any, channelName: string, member: any): void {
+        this.io.to(channelName).emit("presence:leaving", channelName, member);
     }
 
     /**

@@ -76,7 +76,7 @@ export class Channel {
     leave(socket: any, channel: string, reason: string): void {
         if (channel) {
             if (this.isPresence(channel)) {
-                this.presence.leave(socket, channel)
+                this.presence.leave(socket, channel, this)
             }
 
             socket.leave(channel);

@@ -34,6 +34,25 @@ export class PrivateChannel {
         return this.serverRequest(socket, options);
     }
 
+
+    /**
+     * Send authentication request to application server.
+     */
+    leave(socket: any, channel: string, member: any): Promise<any> {
+        let options = {
+            url: this.authHost(socket) + '/broadcasting/leave',
+            form: { channel_name: channel, member: member.user_info || null },
+            headers: {}, //(data.auth && data.auth.headers) ? data.auth.headers : {},
+            rejectUnauthorized: false
+        };
+
+        if (this.options.devMode) {
+            Log.info(`[${new Date().toISOString()}] - Sending leaving request to: ${options.url}\n`);
+        }
+
+        return this.serverRequest(socket, options);
+    }
+
     /**
      * Get the auth host based on the Socket.
      */
@@ -61,7 +80,7 @@ export class PrivateChannel {
         }
 
         if (this.options.devMode) {
-            Log.error(`[${new Date().toISOString()}] - Preparing authentication request to: ${authHostSelected}`);
+            Log.info(`[${new Date().toISOString()}] - Preparing authentication request to: ${authHostSelected}`);
         }
 
         return authHostSelected;
