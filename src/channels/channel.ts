@@ -62,11 +62,13 @@ export class Channel {
         if (data.event && data.channel) {
             if (this.isClientEvent(data.event) &&
                 this.isPrivate(data.channel) &&
-                this.isInChannel(socket, data.channel)) {
+                this.isInChannel(socket, socket.id, data.channel)) {
                 this.io.sockets.connected[socket.id]
                     .broadcast.to(data.channel)
                     .emit(data.event, data.channel, data.data);
             }
+        } else {
+          Log.error('bad client event' + data);
         }
     }
 
@@ -161,7 +163,7 @@ export class Channel {
     /**
      * Check if a socket has joined a channel.
      */
-    isInChannel(socket: any, channel: string): boolean {
-        return !!socket.rooms[channel];
+    isInChannel(socket: any, socketId: string, channel: string): boolean {
+        return !!socket.rooms[socketId] || !!socket.rooms[channel];
     }
 }
